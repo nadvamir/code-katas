@@ -24,20 +24,21 @@ GMOCK_DIR = /home/maxx/libraries/google-test/gmock-1.7.0
 GTEST_DIR = $(GMOCK_DIR)/gtest
 
 # Where to find user code.
-USER_DIR = test
+TEST_DIR = test
+CODE_DIR = .
 
 # Flags passed to the preprocessor.
 # Set Google Test and Google Mock's header directories as system
 # directories, such that the compiler doesn't generate warnings in
 # these headers.
-CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
+CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include -I.
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra -pthread
+CXXFLAGS += -g -Wall -Wextra -pthread -I.
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = code_line_count
+TESTS = test_code_line_count 
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -92,11 +93,17 @@ gmock.a : gmock-all.o gtest-all.o
 gmock_main.a : gmock-all.o gtest-all.o gmock_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
-####### TEST BUILD TARGETS ##################################3
-TEST_OBJECTS = code_line_count.o
+####### BUILD TARGETS ########################################
+OBJECTS = code_line_counter.o
 
-code_line_count.o : $(USER_DIR)/test_CodeLineCount.cpp $(GMOCK_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/test_CodeLineCount.cpp -o $@
+code_line_counter.o : src/CodeLineCounter.cpp include/CodeLineCounter.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c src/CodeLineCounter.cpp -o $@
 
-code_line_count : $(TEST_OBJECTS) gmock_main.a
+####### TEST BUILD TARGETS ###################################
+TEST_OBJECTS = test_code_line_count.o
+
+test_code_line_count.o : $(TEST_DIR)/test_CodeLineCount.cpp $(GMOCK_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/test_CodeLineCount.cpp -o $@
+
+test_code_line_count : $(TEST_OBJECTS) $(OBJECTS) gmock_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@.exe
